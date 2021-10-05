@@ -19,25 +19,16 @@ def get_name(user_id):
     try:
         out = client.users_info(user=user_id)["user"]["profile"]["real_name"]
     except:
-        out = "NO_REPLIES"
+        out = None
     return out
 
 # function to get the channels that a user is active in
 def get_user_channels(user_id):
     return client.users_conversations(user=user_id)["channels"]
 
-# function used to retrieve network analysis data for a specific channel
-def retrieve_data():
 
-    # retrieve data from endpoint
-    data = request.form
-
-    # define user
-    user = data.get('user_id')
-
-    # define user input text from slash command
-    text = data.get("text")
-
+# send response message to user
+def send_response_message(user_id):
     # define message to be posted
     message = {
         'type': 'section',
@@ -49,10 +40,15 @@ def retrieve_data():
         }
     }
 
-    client.chat_postMessage(channel=user, blocks=[message])
+    client.chat_postMessage(channel=user_id, blocks=[message])
 
+
+# function used to retrieve network analysis data for a specific channel
+def get_slack_data(user_id, text):
+
+    # define channel id
     try:
-        channel_id = [channel["id"] for channel in get_user_channels(user) if channel["name"] == text][0]
+        channel_id = [channel["id"] for channel in get_user_channels(user_id) if channel["name"] == text][0]
     except:
         channel_id = "C01T6GGTBQD"
 
@@ -76,53 +72,57 @@ def retrieve_data():
     # clean text column from quotation marks
     messages["text"] = messages["text"].apply(lambda x: re.sub(r"\"", "", x))
 
+    #messages["ts"] = messages["ts"].astype(str)
+
     # replace user ids with names of users
     # messages["reply_users"] = messages["reply_users"].apply(get_name)
     # messages["user"] = messages["user"].apply(get_name)
 
     # select columns to save
-    messages = messages[["type", "reply_users", "user", "reactions", "text", "ts", "date"]]
+    messages = messages[["reply_users", "user", "text", "date"]]
 
-    def find_reaction_users(col):
-        try:
-            return col[0]["users"]
-        except:
-            return np.nan
+    # def find_reaction_users(col):
+    #     try:
+    #         return col[0]["users"]
+    #     except:
+    #         return np.nan
 
     # find user ids in the reactions column
-    messages["reactions"] = messages["reactions"].apply(find_reaction_users)
+    #messages["reactions"] = messages["reactions"].apply(find_reaction_users)
 
     # explode the reply_users column to get senders of replies
     messages = messages.explode("reply_users")
 
     # explode the reactions column to get senders of reactions
-    messages = messages.explode("reactions")
+    #messages = messages.explode("reactions")
 
     # replace NaN with None
     messages = messages.replace(np.nan, "no_replies")
 
+    return messages
+
     # create database
-    database.sql_action(database.create_database)
+    #database.sql_action(database.create_database)
 
     # create tables
-    database.sql_action(database.create_table)
+    #database.sql_action(database.create_table)
 
     # populate table
-    database.populate_table(messages)
+    #database.populate_table(messages)
 
 
 
 
-def network_analysis():
+def network_analysis(data):
 
-    # retrieve data from database
-    results = database.sql_retrieve(database.retrieval)
+    # # retrieve data from database
+    # results = database.sql_retrieve(database.retrieval)
 
-    results_data = results["results"]
-    description = results["description"]
+    # results_data = results["results"]
+    # description = results["description"]
 
-    # create pandas dataframe
-    data = pd.DataFrame(results_data, columns = [header[0] for header in description])
+    # # create pandas dataframe
+    # data = pd.DataFrame(results_data, columns = [header[0] for header in description])
 
     # save df as csv
     data.to_csv("message_data.csv", index=False)
