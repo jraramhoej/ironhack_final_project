@@ -1,109 +1,18 @@
 {% extends "base.html" %} {% block title %}Home{% endblock %} {% block content%}
+<br></br>
 <h1 align="center">Dashboard</h1>
+<br></br>
 
 <div class="card">
   <div class="card-header">
-    {{ current_user.first_name }}
+    Hi {{ current_user.first_name }},
   </div>
   <div class="card-body">
     <h5 class="card-title">Welcome to your user dashboard!</h5>
     <p class="card-text">Here you will find information about how your team works together.</p>
+    <br></br>
+    <p><a href="{{ url_for('views.message_count') }}">How much do the team member message each other?</a></p>
+    <p><a href="{{ url_for('views.graph') }}">Who messages to whom and how much?</a></p>
   </div>
 </div>
-
-<div class="col-xs-10 col-sm-6 col-md-6">
-  <div class="card card-style mb-2">
-    <div class="card-body">
-      <div class="chart-container" style="position: relative;">
-        <canvas id="firstgraph" height="200"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="col-xs-10 col-sm-6 col-md-6">
-  <div class="card card-style mb-2">
-    <div class="card-body">
-      <div class="chart-container" style="position: relative;">
-        <canvas id="overtime_messages" height="200"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% block javascript %}
-<script>
-    //   Chart.scaleService.updateScaleDefaults('linear', {
-    //         ticks: {
-    //             min: 0
-    //         }
-    // });
-    let total_messages = JSON.parse({{ total_messages | tojson }})
-    let total_members = JSON.parse({{ total_members | tojson }})
-    
-    var ctx = document.getElementById('firstgraph').getContext('2d');
-    var myChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: total_members,
-            datasets: [{
-                label: '# of messages per team member',
-                data: total_messages,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 206, 86, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(153, 102, 255, 0.2)',
-                    'rgba(255, 159, 64, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    })
-    
-    overtime_messages = JSON.parse({{over_time_messages | tojson}})
-    labels = JSON.parse({{ dates_label  | tojson}})
-    
-    new Chart(document.getElementById("overtime_messages"), {
-      type: "line",
-      data: {
-        labels: labels,
-        datasets: [{
-          label: "# of messages over time",
-          data: overtime_messages,
-          fill: false,
-          borderColor: "rgb(75, 192, 192)",
-          lineTension: 0.1
-        }]
-      },
-      options: {
-        scales: {
-          xAxes: [{
-                type: 'time',
-                distribution: 'series',
-                time: {
-                    unit: 'week'
-                }
-              }]
-            }
-          }
-        });
-    </script>
-    {% endblock %}
     {% endblock %}

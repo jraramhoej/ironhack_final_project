@@ -1,0 +1,129 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content%}
+<br></br>
+<h3 align="center">How much do the team member message each other?</h3>
+<br></br>
+<div class="col-xs-10 col-sm-6 col-md-6">
+  <div class="card card-style mb-2">
+    <div class="card-body">
+      <div class="chart-container" style="position: relative;">
+        <h5>Messages per week </h5>
+        <canvas id="overtime_messages"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="col-xs-10 col-sm-6 col-md-6">
+  <div class="card card-style mb-2">
+    <div class="card-body">
+      <div class="chart-container" style="position: relative;">
+        <h5>Prediction for messages next 4 weeks </h5>
+        <canvas id="predictions"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block javascript %}
+<script>
+    //   Chart.scaleService.updateScaleDefaults('linear', {
+    //         ticks: {
+    //             min: 0
+    //         }
+    // });
+    total_messages = JSON.parse({{ total_messages | tojson }})
+    total_members = JSON.parse({{ total_members | tojson }})
+    
+    // new Chart(document.getElementById('firstgraph').getContext('2d'), {
+    //     type: 'bar',
+    //     data: {
+    //         labels: total_members,
+    //         datasets: [{
+    //             label: '# of messages per team member',
+    //             data: total_messages,
+    //             backgroundColor: [
+    //                 'rgba(255, 99, 132, 0.2)',
+    //                 'rgba(54, 162, 235, 0.2)',
+    //                 'rgba(255, 206, 86, 0.2)',
+    //                 'rgba(75, 192, 192, 0.2)',
+    //                 'rgba(153, 102, 255, 0.2)',
+    //                 'rgba(255, 159, 64, 0.2)'
+    //             ],
+    //             borderColor: [
+    //                 'rgba(255, 99, 132, 1)',
+    //                 'rgba(54, 162, 235, 1)',
+    //                 'rgba(255, 206, 86, 1)',
+    //                 'rgba(75, 192, 192, 1)',
+    //                 'rgba(153, 102, 255, 1)',
+    //                 'rgba(255, 159, 64, 1)'
+    //             ],
+    //             borderWidth: 1
+    //         }]
+    //     },
+    //     options: {
+    //         scales: {
+    //             y: {
+    //                 beginAtZero: true
+    //             }
+    //         }
+    //     }
+    // })
+    
+    overtime_messages = JSON.parse({{ over_time_messages | tojson }})
+    labels = JSON.parse({{ date_labels | tojson }})
+    
+    new Chart(document.getElementById("overtime_messages"), {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "# of messages over time",
+          data: overtime_messages,
+          fill: false,
+          borderColor: "rgb(75, 192, 192)",
+          lineTension: 0.1
+        }]
+      },
+      options: {
+        scales: {
+          xAxes: [{
+                type: 'time',
+                distribution: 'series',
+                time: {
+                    unit: 'day'
+                  }
+                }]
+              }
+            }
+          })
+          
+    overtime_messages_pred = JSON.parse({{ over_time_messages_pred | tojson }})
+    labels_pred = JSON.parse({{ date_labels_pred | tojson }})
+    
+    new Chart(document.getElementById("predictions"), {
+      type: "line",
+      data: {
+        labels: labels_pred,
+        datasets: [{
+          label: "# of messages over time",
+          data: overtime_messages_pred,
+          fill: false,
+          borderColor: "rgb(75, 192, 192)",
+          lineTension: 0.1
+        }]
+      },
+      options: {
+        scales: {
+          xAxes: [{
+                type: 'time',
+                distribution: 'series',
+                time: {
+                    unit: 'day'
+                  }
+                }]
+              }
+            }
+          }); 
+    </script>
+    {% endblock %}
+    {% endblock %}
