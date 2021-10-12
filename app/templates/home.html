@@ -4,15 +4,47 @@
 <br></br>
 
 <div class="card">
-  <div class="card-header">
-    Hi {{ current_user.first_name }},
-  </div>
   <div class="card-body">
-    <h5 class="card-title">Welcome to your user dashboard!</h5>
+    <p class="card-text"></p><h5 class="card-title">Welcome to your user dashboard, {{ current_user.first_name }}!</h5></p>
     <p class="card-text">Here you will find information about how your team works together.</p>
-    <br></br>
-    <p><a href="{{ url_for('views.message_count') }}">How much do the team member message each other?</a></p>
-    <p><a href="{{ url_for('views.graph') }}">Who messages to whom and how much?</a></p>
+    <p class="card-text">To start with, below you see your team members, how many messages they have sent and received, and who is most influential.</p>
   </div>
 </div>
-    {% endblock %}
+
+<br></br>
+
+<table id="data" class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th># Messages sent</th>
+      <th># Messages received</th>
+      <th>Local influence (degree centrality)</th>
+      <th>Global influence (closeness centrality)</th>
+      <th>Betweenness centrality</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+      <tr>
+        <td>{{ user[0] }}</td>
+        <td>{{ user[5] }}</td>
+        <td>{{ user[1] }}</td>
+        <td>{{ user[2] }}</td>
+        <td>{{ user[3] }}</td>
+        <td>{{ user[4] }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    $(document).ready(function () {
+      $('#data').DataTable({
+      });
+    });
+  </script>
+{% endblock %}

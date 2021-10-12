@@ -36,7 +36,7 @@ def send_response_message(user_id):
         'text': {
             'type': 'mrkdwn',
             'text': (
-                "Hey, check out our latest analysis of your team here:"
+                ":sparkles: Hey, check out our latest analysis of your team here: <http://localhost:5000|LINK> :sparkles:"
             )
         }
     }
@@ -48,32 +48,19 @@ def send_response_message(user_id):
 def get_slack_data(user_id, text):
 
     # define channel id
-    # try:
-    #     channel_id = [channel["id"] for channel in get_user_channels(user_id) if channel["name"] == text][0]
-    # except:
-    #     channel_id = "C01T6GGTBQD"
+    try:
+        channel_id = [channel["id"] for channel in get_user_channels(user_id) if channel["name"] == text][0]
+    except:
+        channel_id = "C01T6GGTBQD"
 
-    channel_ids = [channel["id"] for channel in get_user_channels(user_id)]
+    # get channel history
+    result = client.conversations_history(channel=channel_id, limit=1000)
 
-    dfs = []
+    # retrieve messages
+    conversation_history = result["messages"]
 
-    for channel_id in channel_ids:
-
-        # get channel history
-        result = client.conversations_history(channel=channel_id, limit=1000)
-
-        # retrieve messages
-        conversation_history = result["messages"]
-
-        # create DataFrame
-        df = pd.DataFrame(conversation_history)
-
-        dfs.append(df)
-
-    messages = pd.concat(dfs)
-
-    # fill reply column with NO_REPLIES for cases where no one replied to the message
-    #messages["reply_users"] = messages["reply_users"].fillna(value="NO_REPLIES")
+    # create DataFrame
+    messages = pd.DataFrame(conversation_history)
 
     # convert timestamp to datetime object
     messages['date'] = pd.to_datetime(messages['ts'], unit="s").dt.date
@@ -82,8 +69,6 @@ def get_slack_data(user_id, text):
 
     # clean text column from quotation marks
     messages["text"] = messages["text"].apply(lambda x: re.sub(r"\"", "", x))
-
-    #messages["ts"] = messages["ts"].astype(str)
 
     # replace user ids with names of users
     # messages["reply_users"] = messages["reply_users"].apply(get_name)
@@ -111,15 +96,6 @@ def get_slack_data(user_id, text):
     messages = messages.replace(np.nan, "no_replies")
 
     return messages
-
-    # create database
-    #database.sql_action(database.create_database)
-
-    # create tables
-    #database.sql_action(database.create_table)
-
-    # populate table
-    #database.populate_table(messages)
 
 
 def time_series_analysis(df):
@@ -167,34 +143,15 @@ def time_series_analysis(df):
     
 
 
-def network_analysis(df):
-
-    # # retrieve data from database
-    # results = database.sql_retrieve(database.retrieval)
-
-    # results_data = results["results"]
-    # description = results["description"]
-
-    # # create pandas dataframe
-    # data = pd.DataFrame(results_data, columns = [header[0] for header in description])
+def network_analysis(messages):
     
-    df = df[df["reply_users"] != "no_replies"]
+    messages = messages[messages["reply_users"] != "no_replies"]
 
     # get number of messages per user
-    df = df.groupby(["reply_users", "user"]).size().reset_index().rename(columns={0: 'count'})
-
-    # get all rows of original
-    # network_df = data.merge(network_df, how="left", left_on=["reply_users", "user"], right_on=["reply_users", "user"])
+    df = messages.groupby(["reply_users", "user"]).size().reset_index().rename(columns={0: 'count'})
 
     # rename columns
     df.rename({"reply_users": "source", "user": "target"}, inplace=True, axis=1)
-
-    # df = df[["source", "target", "text", "date", "count"]]
-
-    df.reset_index(drop=True, inplace=True)
-
-    # data frame for graph without messages with no replies
-    # graph_df = df[df.source != "no_replies"]
 
     # create graph
     Q = nx.from_pandas_edgelist(df, source="source", target="target", edge_attr="count")
@@ -231,9 +188,26 @@ def network_analysis(df):
     betweenness_centrality = nx.betweenness_centrality(Q)
 
     # the density of the network
-    density = nx.density(Q)
+    # density = nx.density(Q)
 
-    return {"degree_centrality": degree_centrality, "closeness_centrality": closeness_centrality, "betweenness_centrality": betweenness_centrality, "density": density}
+    # make network analysis result to dataframe
+    network_res = pd.DataFrame({"degree_centrality": degree_centrality, "closeness_centrality": closeness_centrality, "betweenness_centrality": betweenness_centrality}).reset_index()
+
+    # number of messages sent
+    messages_sent = messages.groupby(["reply_users"]).size().reset_index().rename(columns={0: 'count_sent'})
+
+    # number of messages received
+    messages_received = messages.groupby(["user"]).size().reset_index().rename(columns={0: 'count_received'})
+
+    # rename index
+    messages_received.rename({"user": "reply_users"}, inplace=True, axis=1)
+    network_res.rename({"index": "reply_users"}, inplace=True, axis=1)
+
+    res = messages_sent[["reply_users", "count_sent"]].merge(network_res, left_on="reply_users", right_on="reply_users")
+
+    res = res[["reply_users", "count_sent", "degree_centrality", "closeness_centrality", "betweenness_centrality"]].merge(messages_received, left_on="reply_users", right_on="reply_users")
+
+    return res.values.tolist()
 
 
 def graph_data():
@@ -249,8 +223,6 @@ def graph_data():
     df.index = pd.DatetimeIndex(df['date'], freq='infer')
 
     df["date"] = df["date"].astype(str)
-
-    #df.drop(["date"], axis=1, inplace=True)
 
     records = df.to_records(index=False)
 

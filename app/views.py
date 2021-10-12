@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, flash, jsonify, Response
+from flask import Blueprint, render_template, request, Response
 from flask_login import login_required, current_user
-from .models import Note, Slack
+from .models import Slack
 from . import db
 import json
 import pandas as pd
@@ -13,7 +13,21 @@ views = Blueprint('views', __name__)
 @views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
-    return render_template("home.html", user=current_user)
+
+    # load data from database
+    query = "SELECT * FROM slack;"
+    
+    # execute query on database from pandas
+    df = pd.read_sql(query, db.session.bind)
+
+    users = network_analysis(df)
+   
+    
+    return render_template(
+        "home.html", 
+        user=current_user,
+        users=users,
+        )
 
 # endpoint for retrieving slack data
 @views.route("/slack", methods=["GET", "POST"])
@@ -52,7 +66,7 @@ def slack():
     return Response(), 200
 
 # page for displaying time series data
-@views.route('/message_count', methods=['GET', 'POST'])
+@views.route('/time_series', methods=['GET', 'POST'])
 @login_required
 def message_count():
 
