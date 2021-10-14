@@ -62,6 +62,9 @@ def get_slack_data(user_id, text):
     # create DataFrame
     messages = pd.DataFrame(conversation_history)
 
+    # add channel id to df
+    messages["user_id"] = str(user_id)
+
     # convert timestamp to datetime object
     messages['date'] = pd.to_datetime(messages['ts'], unit="s").dt.date
 
@@ -75,7 +78,7 @@ def get_slack_data(user_id, text):
     # messages["user"] = messages["user"].apply(get_name)
 
     # select columns to save
-    messages = messages[["reply_users", "user", "text", "date"]]
+    messages = messages[["user_id", "reply_users", "user", "text", "date"]]
 
     # def find_reaction_users(col):
     #     try:
@@ -92,7 +95,7 @@ def get_slack_data(user_id, text):
     # explode the reactions column to get senders of reactions
     #messages = messages.explode("reactions")
 
-    # replace NaN with None
+    # replace NaN with no_replies
     messages = messages.replace(np.nan, "no_replies")
 
     return messages

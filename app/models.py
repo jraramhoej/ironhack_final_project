@@ -10,6 +10,7 @@ class User(db.Model, UserMixin):
 
 class Slack(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(150))
     reply_users = db.Column(db.String(150))
     user = db.Column(db.String(150))
     text = db.Column(db.String(150))

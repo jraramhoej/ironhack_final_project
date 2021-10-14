@@ -51,7 +51,7 @@ def slack():
     for row in list(get_slack_data(user_id, text).to_records(index=False)):
         ts = Slack.query.filter_by(ts=row[3]).first()
         if not ts:
-            db.session.add(Slack(reply_users=row[0], user=row[1], text=row[2], ts=row[3]))
+            db.session.add(Slack(channel_id=row[0], reply_users=row[1], user=row[2], text=row[3], ts=row[4]))
             db.session.commit()
         else:
             pass
