@@ -75,27 +75,17 @@ def message_count():
     # execute query on database from pandas
     df = pd.read_sql(query, db.session.bind)
 
-    if len(df) != 0:
-
-        # modify data for total number of messages time series
-        time_series = time_series_analysis(df)
+    # modify data for total number of messages time series
+    time_series = time_series_analysis(df)
     
-        # time series data
-        date_labels = list(time_series["data"].index.strftime("%m-%d-%y"))
-        over_time_messages = list(time_series["data"]["count"])
+    # time series data
+    date_labels = list(time_series["data"].index.strftime("%m-%d-%y"))
+    over_time_messages = list(time_series["data"]["count"])
 
-        # time series prediction
-        date_labels_pred = list(time_series["predictions"].index.strftime("%m-%d-%y"))
-        over_time_messages_pred = list(time_series["predictions"])
-    else:
-        # time series data
-        date_labels = []
-        over_time_messages = []
-
-        # time series prediction
-        date_labels_pred = []
-        over_time_messages_pred = []
-
+    # time series prediction
+    date_labels_pred = list(time_series["predictions"].index.strftime("%m-%d-%y"))
+    over_time_messages_pred = list(time_series["predictions"])
+    
     return render_template(
         "message_count.html", 
         user=current_user, 
