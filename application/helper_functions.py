@@ -1,6 +1,5 @@
 import slack
-import database
-from flask import request, Response
+from flask import Response
 import pandas as pd
 import numpy as np
 import re

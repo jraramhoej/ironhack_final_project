@@ -4,7 +4,7 @@ from .models import Slack
 from . import db
 import json
 import pandas as pd
-from app.helper_functions import send_response_message, get_slack_data, time_series_analysis, network_analysis
+from application.helper_functions import send_response_message, get_slack_data, time_series_analysis, network_analysis
 
 
 views = Blueprint('views', __name__)
