@@ -3,16 +3,19 @@ from flask import Response
 import pandas as pd
 import numpy as np
 import re
+import os
 import networkx as nx
 from pyvis.network import Network
-from dotenv import dotenv_values
+from dotenv import load_dotenv, dotenv_values
 from statsmodels.tsa.arima.model import ARIMA
 
 # load environment variables
-config = dotenv_values(".env")
+# config = dotenv_values(".env")
+load_dotenv()
+SLACK_TOKEN = os.getenv('SLACK_TOKEN')
 
 # define slack client
-client = slack.WebClient(token=config['SLACK_TOKEN'])
+client = slack.WebClient(token=SLACK_TOKEN)
 
 # function to retrieve the display name of the user based on user id
 def get_name(user_id):
