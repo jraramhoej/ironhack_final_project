@@ -38,7 +38,7 @@ def send_response_message(user_id):
         'text': {
             'type': 'mrkdwn',
             'text': (
-                ":sparkles: Hey, check out our latest analysis of your team here: <http://localhost:5000|LINK> :sparkles:"
+                ":sparkles: Hey, check out our latest analysis of your team here: <https://network-analysis.azurewebsites.net|LINK> :sparkles:"
             )
         }
     }

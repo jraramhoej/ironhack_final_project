@@ -14,15 +14,18 @@ views = Blueprint('views', __name__)
 @login_required
 def home():
 
+    # define slack user id for current user
+    slack_user_id = current_user.slack_user_id
+
     # load data from database
-    query = "SELECT * FROM slack;"
+    query = "SELECT * FROM slack WHERE user_id = \"" + slack_user_id + "\";"
     
     # execute query on database from pandas
     df = pd.read_sql(query, db.session.bind)
-
+    
+    # analyse data
     users = network_analysis(df)
    
-    
     return render_template(
         "home.html", 
         user=current_user,
@@ -49,7 +52,7 @@ def slack():
 
         # save slack data to database
         for row in list(get_slack_data(user_id, text).to_records(index=False)):
-            ts = Slack.query.filter_by(ts=row[3]).first()
+            ts = Slack.query.filter_by(ts=row[4]).first()
             if not ts:
                 db.session.add(Slack(user_id=row[0], reply_users=row[1], user=row[2], text=row[3], ts=row[4]))
                 db.session.commit()
@@ -63,8 +66,11 @@ def slack():
 @login_required
 def message_count():
 
+    # define slack user id for current user
+    slack_user_id = current_user.slack_user_id
+
     # load data from database
-    query = "SELECT * FROM slack;"
+    query = "SELECT * FROM slack WHERE user_id = \"" + slack_user_id + "\";"
     
     # execute query on database from pandas
     df = pd.read_sql(query, db.session.bind)
@@ -119,8 +125,11 @@ def message_count():
 @login_required
 def graph():
 
+    # define slack user id for current user
+    slack_user_id = current_user.slack_user_id
+    
     # load data from database
-    query = "SELECT * FROM slack;"
+    query = "SELECT * FROM slack WHERE user_id = \"" + slack_user_id + "\";"
     
     # execute query on database from pandas
     df = pd.read_sql(query, db.session.bind)
