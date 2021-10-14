@@ -75,46 +75,30 @@ def message_count():
     # execute query on database from pandas
     df = pd.read_sql(query, db.session.bind)
 
-    # modify data for total number of messages time series
-    time_series = time_series_analysis(df)
+    if len(df) != 0:
+
+        # modify data for total number of messages time series
+        time_series = time_series_analysis(df)
     
-    # time series data
-    date_labels = list(time_series["data"].index.strftime("%m-%d-%y"))
-    over_time_messages = list(time_series["data"]["count"])
+        # time series data
+        date_labels = list(time_series["data"].index.strftime("%m-%d-%y"))
+        over_time_messages = list(time_series["data"]["count"])
 
-    # time series prediction
-    date_labels_pred = list(time_series["predictions"].index.strftime("%m-%d-%y"))
-    over_time_messages_pred = list(time_series["predictions"])
+        # time series prediction
+        date_labels_pred = list(time_series["predictions"].index.strftime("%m-%d-%y"))
+        over_time_messages_pred = list(time_series["predictions"])
+    else:
+        # time series data
+        date_labels = []
+        over_time_messages = []
 
-    # total messages per person
-   
-
-    #print(time_series["predictions"])
-
-
-    # get the total amount of messages per team member
-    total_messages_sent = db.session.query(db.func.count(Slack.text), Slack.reply_users).group_by(Slack.reply_users).all()
-    
-    total_messages = []
-    total_members = []
-    for val, name in total_messages_sent:
-        total_messages.append(val)
-        total_members.append(name)
-
-    # get the messages sent over time
-    # dates = db.session.query(db.func.count(Slack.text), Slack.ts).group_by(Slack.ts).order_by(Slack.ts).all()
-
-    # over_time_messages = []
-    # dates_label = []
-    # for amount, date in dates:
-    #     dates_label.append(date.strftime("%m-%d-%y"))
-    #     over_time_messages.append(amount)
+        # time series prediction
+        date_labels_pred = []
+        over_time_messages_pred = []
 
     return render_template(
         "message_count.html", 
         user=current_user, 
-        total_messages=json.dumps(total_messages),
-        total_members=json.dumps(total_members),
         over_time_messages=json.dumps(over_time_messages),
         date_labels =json.dumps(date_labels),
         over_time_messages_pred=json.dumps(over_time_messages_pred),
