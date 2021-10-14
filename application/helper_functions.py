@@ -181,7 +181,7 @@ def network_analysis(messages):
         net.add_node(dst, dst, title=dst)
         net.add_edge(src, dst, value=w)
 
-    net.show('app/templates/graph_data.html')
+    net.show('application/templates/graph_data.html')
 
     # get the degree of centrality for the graph object
     degree_centrality = nx.degree_centrality(Q)

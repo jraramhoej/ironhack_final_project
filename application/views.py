@@ -33,37 +33,30 @@ def home():
 @views.route("/slack", methods=["GET", "POST"])
 def slack():
 
-    #if request.method == "POST":
+    if request.method == "POST":
         
-    # retrieve data from endpoint
-    data = request.form
+        # retrieve data from endpoint
+        data = request.form
 
-    # define user
-    user_id = data.get('user_id')
+        # define user
+        user_id = data.get('user_id')
 
-    # define user input text from slash command
-    text = data.get("text")
+        # define user input text from slash command
+        text = data.get("text")
 
-    # send response message to slack user
-    send_response_message(user_id)
+        # send response message to slack user
+        send_response_message(user_id)
 
-    # save slack data to database
-    for row in list(get_slack_data(user_id, text).to_records(index=False)):
-        ts = Slack.query.filter_by(ts=row[3]).first()
-        if not ts:
-            db.session.add(Slack(channel_id=row[0], reply_users=row[1], user=row[2], text=row[3], ts=row[4]))
-            db.session.commit()
-        else:
-            pass
+        # save slack data to database
+        for row in list(get_slack_data(user_id, text).to_records(index=False)):
+            ts = Slack.query.filter_by(ts=row[3]).first()
+            if not ts:
+                db.session.add(Slack(user_id=row[0], reply_users=row[1], user=row[2], text=row[3], ts=row[4]))
+                db.session.commit()
+            else:
+                pass
 
-    # load data from database
-    query = "SELECT * FROM slack;"
-    
-    # execute query on database from pandas
-    df = pd.read_sql(query, db.session.bind)
-
-
-    return Response(), 200
+        return Response(), 200
 
 # page for displaying time series data
 @views.route('/time_series', methods=['GET', 'POST'])
