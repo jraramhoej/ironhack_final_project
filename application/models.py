@@ -11,7 +11,7 @@ class User(db.Model, UserMixin):
 
 class Slack(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(150))
+    user_id = db.Column(db.String(150), db.ForeignKey("user.slack_user_id"))
     reply_users = db.Column(db.String(150))
     user = db.Column(db.String(150))
     text = db.Column(db.String(150))

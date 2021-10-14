@@ -196,7 +196,7 @@ def network_analysis(messages):
     # density = nx.density(Q)
 
     # make network analysis result to dataframe
-    network_res = pd.DataFrame({"degree_centrality": degree_centrality, "closeness_centrality": closeness_centrality, "betweenness_centrality": betweenness_centrality}).reset_index()
+    # network_res = pd.DataFrame({"degree_centrality": degree_centrality, "closeness_centrality": closeness_centrality, "betweenness_centrality": betweenness_centrality}).reset_index()
 
     # number of messages sent
     messages_sent = messages.groupby(["reply_users"]).size().reset_index().rename(columns={0: 'count_sent'})
@@ -206,11 +206,11 @@ def network_analysis(messages):
 
     # rename index
     messages_received.rename({"user": "reply_users"}, inplace=True, axis=1)
-    network_res.rename({"index": "reply_users"}, inplace=True, axis=1)
+    # network_res.rename({"index": "reply_users"}, inplace=True, axis=1)
 
-    res = messages_sent[["reply_users", "count_sent"]].merge(network_res, left_on="reply_users", right_on="reply_users")
+    # res = messages_sent[["reply_users", "count_sent"]].merge(network_res, left_on="reply_users", right_on="reply_users")
 
-    res = res[["reply_users", "count_sent", "degree_centrality", "closeness_centrality", "betweenness_centrality"]].merge(messages_received, left_on="reply_users", right_on="reply_users")
+    res = messages_sent[["reply_users", "count_sent"]].merge(messages_received, left_on="reply_users", right_on="reply_users")
 
     return res.values.tolist()
 

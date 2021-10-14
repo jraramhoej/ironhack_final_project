@@ -17,22 +17,16 @@
   <thead>
     <tr>
       <th>Name</th>
-      <th># Messages received</th>
       <th># Messages sent</th>
-      <th>Local influence (degree centrality)</th>
-      <th>Global influence (closeness centrality)</th>
-      <th>Being a bridge (betweenness centrality)</th>
+      <th># Messages received</th>
     </tr>
   </thead>
   <tbody>
     {% for user in users %}
       <tr>
         <td>{{ user[0] }}</td>
-        <td>{{ user[5] }}</td>
         <td>{{ user[1] }}</td>
         <td>{{ user[2] }}</td>
-        <td>{{ user[3] }}</td>
-        <td>{{ user[4] }}</td>
       </tr>
     {% endfor %}
   </tbody>
