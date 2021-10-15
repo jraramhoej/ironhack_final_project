@@ -24,12 +24,18 @@ def home():
     df = pd.read_sql(query, db.session.bind)
     
     # analyse data
-    users = network_analysis(df)
-   
-    return render_template(
-        "home.html", 
-        user=current_user,
-        users=users,
+    if len(df) != 0:
+        users = network_analysis(df)
+        
+        return render_template(
+            "home.html", 
+            user=current_user,
+            users=users,
+            )
+    else:
+        return render_template(
+            "error_page.html",
+            user=current_user
         )
 
 # endpoint for retrieving slack data
@@ -75,25 +81,33 @@ def message_count():
     # execute query on database from pandas
     df = pd.read_sql(query, db.session.bind)
 
-    # modify data for total number of messages time series
-    time_series = time_series_analysis(df)
-    
-    # time series data
-    date_labels = list(time_series["data"].index.strftime("%m-%d-%y"))
-    over_time_messages = list(time_series["data"]["count"])
+    if len(df) != 0:
 
-    # time series prediction
-    date_labels_pred = list(time_series["predictions"].index.strftime("%m-%d-%y"))
-    over_time_messages_pred = list(time_series["predictions"])
+        # modify data for total number of messages time series
+        time_series = time_series_analysis(df)
     
-    return render_template(
-        "message_count.html", 
-        user=current_user, 
-        over_time_messages=json.dumps(over_time_messages),
-        date_labels =json.dumps(date_labels),
-        over_time_messages_pred=json.dumps(over_time_messages_pred),
-        date_labels_pred =json.dumps(date_labels_pred)
+        # time series data
+        date_labels = list(time_series["data"].index.strftime("%m-%d-%y"))
+        over_time_messages = list(time_series["data"]["count"])
+
+        # time series prediction
+        date_labels_pred = list(time_series["predictions"].index.strftime("%m-%d-%y"))
+        over_time_messages_pred = list(time_series["predictions"])
+    
+        return render_template(
+            "message_count.html", 
+            user=current_user, 
+            over_time_messages=json.dumps(over_time_messages),
+            date_labels =json.dumps(date_labels),
+            over_time_messages_pred=json.dumps(over_time_messages_pred),
+            date_labels_pred =json.dumps(date_labels_pred)
+            )
+    else:
+        return render_template(
+            "error_page.html",
+            user=current_user
         )
+        
 
 @views.route('/graph', methods=['GET', 'POST'])
 @login_required
@@ -108,6 +122,13 @@ def graph():
     # execute query on database from pandas
     df = pd.read_sql(query, db.session.bind)
 
-    network_analysis(df)
+    if len(df) != 0:
 
-    return render_template("graph.html", user=current_user)
+        network_analysis(df)
+
+        return render_template("graph.html", user=current_user)
+    else:
+        return render_template(
+            "error_page.html",
+            user=current_user
+        )

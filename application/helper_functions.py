@@ -218,6 +218,10 @@ def network_analysis(messages):
     # number of messages received
     messages_received = messages.groupby(["user"]).size().reset_index().rename(columns={0: 'count_received'})
 
+    print(messages_sent.dtypes)
+    print(messages_received.dtypes)
+
+
     # rename index
     messages_received.rename({"user": "reply_users"}, inplace=True, axis=1)
     # network_res.rename({"index": "reply_users"}, inplace=True, axis=1)
