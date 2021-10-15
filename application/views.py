@@ -52,9 +52,9 @@ def slack():
 
         # save slack data to database
         for row in list(get_slack_data(user_id, text).to_records(index=False)):
-            text = Slack.query.filter_by(text=row[3]).first()
-            if text is None:
-                db.session.add(Slack(user_id=row[0], reply_users=row[1], user=row[2], text=row[3], ts=row[4]))
+            client_msg_id = Slack.query.filter_by(client_msg_id=row[0]).first()
+            if client_msg_id is None:
+                db.session.add(Slack(client_msg_id=row[0], user_id=row[1], reply_users=row[2], user=row[3], text=row[4], ts=row[5]))
                 db.session.commit()
             else:
                 pass

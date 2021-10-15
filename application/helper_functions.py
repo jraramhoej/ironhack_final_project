@@ -2,6 +2,7 @@ import slack
 from flask import Response
 import pandas as pd
 import numpy as np
+from numpy import nan
 import re
 import os
 import networkx as nx
@@ -80,7 +81,7 @@ def get_slack_data(user_id, text):
     # messages["user"] = messages["user"].apply(get_name)
 
     # select columns to save
-    messages = messages[["user_id", "reply_users", "user", "text", "date"]]
+    messages = messages[["client_msg_id", "user_id", "reply_users", "user", "text", "date"]]
 
     # def find_reaction_users(col):
     #     try:
@@ -92,18 +93,27 @@ def get_slack_data(user_id, text):
     #messages["reactions"] = messages["reactions"].apply(find_reaction_users)
 
     # explode the reply_users column to get senders of replies
-    messages = messages.explode("reply_users")
+    # messages = messages.explode("reply_users")
 
     # explode the reactions column to get senders of reactions
     #messages = messages.explode("reactions")
 
-    # replace NaN with no_replies
-    messages = messages.replace(np.nan, "no_replies")
+    messages.dropna(inplace=True)
+
+    # convert reply users to string for database
+    messages["reply_users"] = messages["reply_users"].astype(str)
+
 
     return messages
 
 
 def time_series_analysis(df):
+
+    # df = df[df["reply_users"] != "nan"]
+
+    df['reply_users'] = pd.eval(df['reply_users'])
+
+    df = df.explode("reply_users")
 
     df['week'] = pd.to_datetime(df['ts']).dt.to_period('W')
 
@@ -149,8 +159,12 @@ def time_series_analysis(df):
 
 
 def network_analysis(messages):
+
+    #messages = messages[messages["reply_users"] != "nan"]
     
-    messages = messages[messages["reply_users"] != "no_replies"]
+    messages['reply_users'] = pd.eval(messages['reply_users'])
+
+    messages = messages.explode("reply_users")
 
     # get number of messages per user
     df = messages.groupby(["reply_users", "user"]).size().reset_index().rename(columns={0: 'count'})

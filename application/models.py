@@ -1,6 +1,8 @@
 from . import db
 from flask_login import UserMixin
 from sqlalchemy.sql import func
+import json
+from sqlalchemy.ext.hybrid import hybrid_property
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -11,7 +13,8 @@ class User(db.Model, UserMixin):
 
 class Slack(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(150), db.ForeignKey("user.slack_user_id"))
+    client_msg_id = db.Column(db.String(150), unique=True)
+    user_id = db.Column(db.String(150))
     reply_users = db.Column(db.String(150))
     user = db.Column(db.String(150))
     text = db.Column(db.String(150))
